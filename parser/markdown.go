@@ -21,6 +21,12 @@ func (p *mdParser) Next() (entry storage.Entry, err error) {
 		return entry, err
 	}
 
+	firstLine := lo.FirstOrEmpty(strings.Split(entry.Body, "\n"))
+
+	if firstLine != "" {
+		entry.Title = firstLine
+	}
+
 	metadata := getMetadata(entry.Body)
 
 	if ids, ok := metadata["id"]; ok {
