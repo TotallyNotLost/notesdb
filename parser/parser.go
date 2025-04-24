@@ -11,15 +11,15 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/TotallyNotLost/notesdb/entry"
 	"github.com/TotallyNotLost/notesdb/scanner"
-	"github.com/TotallyNotLost/notesdb/storage"
 )
 
 type Parser interface {
 	SetSource(source string)
 	SetReader(io.Reader)
 	canParse(source string) bool
-	Next() (storage.Entry, error)
+	Next() (entry.Entry, error)
 }
 
 type textParser struct {
@@ -30,18 +30,18 @@ type textParser struct {
 func (p *textParser) SetSource(source string)     { p.source = source }
 func (p *textParser) SetReader(reader io.Reader)  { p.scanner = scanner.New(reader) }
 func (p *textParser) canParse(source string) bool { return true }
-func (p *textParser) Next() (entry storage.Entry, err error) {
+func (p *textParser) Next() (e entry.Entry, err error) {
 	more := p.scanner.Scan()
 	if !more {
-		return entry, io.EOF
+		return e, io.EOF
 	}
 	body := p.scanner.Text()
 	h := sha1.New()
 	h.Write([]byte(body))
 	// TODO: Why doesn't this match sha1sum?
 	id := hex.EncodeToString(h.Sum(nil))
-	entry = storage.NewEntry(id, p.source, storage.EntryTypeText, p.source, body, []string{})
-	return entry, nil
+	e = entry.NewEntry(id, p.source, entry.EntryTypeText, p.source, body, []string{})
+	return e, nil
 }
 
 func getMetadata(text string) map[string][]string {
@@ -68,8 +68,8 @@ func getMetadata(text string) map[string][]string {
 	return o
 }
 
-func NewRelative(relationship string) (*storage.Relative, error) {
-	r := new(storage.Relative)
+func NewRelative(relationship string) (*entry.Relative, error) {
+	r := new(entry.Relative)
 
 	kvPairs := strings.SplitSeq(relationship, ",")
 
@@ -85,15 +85,15 @@ func NewRelative(relationship string) (*storage.Relative, error) {
 		case "start":
 			r.Start, err = strconv.Atoi(v)
 			if err != nil {
-				return new(storage.Relative), fmt.Errorf("Error parsing relation start: %w", err)
+				return new(entry.Relative), fmt.Errorf("Error parsing relation start: %w", err)
 			}
 		case "end":
 			r.End, err = strconv.Atoi(v)
 			if err != nil {
-				return new(storage.Relative), fmt.Errorf("Error parsing relation end: %w", err)
+				return new(entry.Relative), fmt.Errorf("Error parsing relation end: %w", err)
 			}
 		default:
-			return new(storage.Relative), errors.New(fmt.Sprintf("Unsupported key: %s", k))
+			return new(entry.Relative), errors.New(fmt.Sprintf("Unsupported key: %s", k))
 		}
 	}
 

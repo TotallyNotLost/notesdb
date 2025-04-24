@@ -1,4 +1,4 @@
-package storage
+package entry
 
 type Entry struct {
 	Id        string      `json:"id"`

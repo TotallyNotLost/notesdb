@@ -4,7 +4,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/TotallyNotLost/notesdb/storage"
+	"github.com/TotallyNotLost/notesdb/entry"
 	"github.com/samber/lo"
 )
 
@@ -15,37 +15,37 @@ type mdParser struct {
 func (p *mdParser) SetSource(source string)     { p.textParser.SetSource(source) }
 func (p *mdParser) SetReader(reader io.Reader)  { p.textParser.SetReader(reader) }
 func (p *mdParser) canParse(source string) bool { return strings.HasSuffix(source, ".md") }
-func (p *mdParser) Next() (entry storage.Entry, err error) {
-	entry, err = p.textParser.Next()
+func (p *mdParser) Next() (e entry.Entry, err error) {
+	e, err = p.textParser.Next()
 	if err != nil {
-		return entry, err
+		return e, err
 	}
 
-	firstLine := lo.FirstOrEmpty(strings.Split(entry.Body, "\n"))
+	firstLine := lo.FirstOrEmpty(strings.Split(e.Body, "\n"))
 
 	if firstLine != "" {
-		entry.Title = firstLine
+		e.Title = firstLine
 	}
 
-	metadata := getMetadata(entry.Body)
+	metadata := getMetadata(e.Body)
 
 	if ids, ok := metadata["id"]; ok {
-		entry.Id = lo.LastOrEmpty(ids)
+		e.Id = lo.LastOrEmpty(ids)
 	}
 	if relatives, ok := metadata["related"]; ok {
 		for _, relationship := range relatives {
 			relative, err := NewRelative(relationship)
 			if err != nil {
-				return storage.Entry{}, err
+				return entry.Entry{}, err
 			}
-			entry.Relatives = append(entry.Relatives, relative)
+			e.Relatives = append(e.Relatives, relative)
 			if strings.HasPrefix(relative.Id, "#") {
-				entry.Tags = append(entry.Tags, strings.TrimPrefix(relative.Id, "#"))
+				e.Tags = append(e.Tags, strings.TrimPrefix(relative.Id, "#"))
 			}
 		}
 
 	}
 
-	entry.Type = storage.EntryTypeMarkdown
-	return entry, nil
+	e.Type = entry.EntryTypeMarkdown
+	return e, nil
 }
