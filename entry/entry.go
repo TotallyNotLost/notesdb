@@ -4,10 +4,7 @@ type Entry struct {
 	Id        string      `json:"id"`
 	Source    string      `json:"source"`
 	Type      entryType   `json:"type"`
-	Title     string      `json:"title"`
-	Body      string      `json:"body"`
-	Tags      []string    `json:"tags"`
-	Relatives []*Relative `json:"relatives"`
+	Revisions []*Revision `json:"revisions"`
 }
 
 type entryType int
@@ -18,15 +15,25 @@ const (
 	EntryTypeMarkdown
 )
 
+type Revision struct {
+	Title     string      `json:"title"`
+	Body      string      `json:"body"`
+	Tags      []string    `json:"tags"`
+	Relatives []*Relative `json:"relatives"`
+}
+
 func NewEntry(id string, source string, typ entryType, title string, body string, tags []string) Entry {
-	return Entry{
-		Id:        id,
-		Source:    source,
-		Type:      typ,
+	revision := &Revision{
 		Title:     title,
 		Body:      body,
 		Tags:      tags,
 		Relatives: []*Relative{},
+	}
+	return Entry{
+		Id:        id,
+		Source:    source,
+		Type:      typ,
+		Revisions: []*Revision{revision},
 	}
 }
 

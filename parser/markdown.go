@@ -21,13 +21,14 @@ func (p *mdParser) Next() (e entry.Entry, err error) {
 		return e, err
 	}
 
-	firstLine := lo.FirstOrEmpty(strings.Split(e.Body, "\n"))
+	revision := lo.FirstOrEmpty(e.Revisions)
+	firstLine := lo.FirstOrEmpty(strings.Split(revision.Body, "\n"))
 
 	if firstLine != "" {
-		e.Title = firstLine
+		revision.Title = firstLine
 	}
 
-	metadata := getMetadata(e.Body)
+	metadata := getMetadata(revision.Body)
 
 	if ids, ok := metadata["id"]; ok {
 		e.Id = lo.LastOrEmpty(ids)
@@ -38,9 +39,9 @@ func (p *mdParser) Next() (e entry.Entry, err error) {
 			if err != nil {
 				return entry.Entry{}, err
 			}
-			e.Relatives = append(e.Relatives, relative)
+			revision.Relatives = append(revision.Relatives, relative)
 			if strings.HasPrefix(relative.Id, "#") {
-				e.Tags = append(e.Tags, strings.TrimPrefix(relative.Id, "#"))
+				revision.Tags = append(revision.Tags, strings.TrimPrefix(relative.Id, "#"))
 			}
 		}
 

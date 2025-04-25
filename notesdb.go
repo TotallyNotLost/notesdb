@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"iter"
+	"maps"
 	"os"
 
 	"github.com/TotallyNotLost/notesdb/entry"
@@ -11,11 +13,13 @@ import (
 )
 
 type Notesdb struct {
-	entries []*entry.Entry
+	entries map[string]*entry.Entry
 }
 
 func New() *Notesdb {
-	return &Notesdb{}
+	return &Notesdb{
+		entries: make(map[string]*entry.Entry),
+	}
 }
 
 func (n *Notesdb) Import(source string) {
@@ -42,12 +46,21 @@ func (n *Notesdb) Import(source string) {
 			// TODO: Don't use panic
 			panic(err)
 		}
-		n.entries = append(n.entries, &entry)
+
+		existing, ok := n.entries[entry.Id]
+
+		if ok {
+			// The entry has already been recorded.
+			// We need to append this revision to the existing entry.
+			existing.Revisions = append(existing.Revisions, entry.Revisions...)
+		} else {
+			n.entries[entry.Id] = &entry
+		}
 	}
 }
 
-func (n *Notesdb) ListEntries() []*entry.Entry {
-	return n.entries
+func (n *Notesdb) All() iter.Seq[*entry.Entry] {
+	return maps.Values(n.entries)
 }
 
 func (n *Notesdb) Get(id string) (*entry.Entry, error) {
