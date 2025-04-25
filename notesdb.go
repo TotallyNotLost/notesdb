@@ -2,6 +2,7 @@ package notesdb
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"iter"
@@ -59,16 +60,51 @@ func (n *Notesdb) Import(source string) {
 	}
 }
 
-func (n *Notesdb) All() iter.Seq[*entry.Entry] {
-	return maps.Values(n.entries)
-}
+/*
+ * Verify that the imports were all successful.
+ *
+ * Returns an error if any references couldn't be resolved.
+ */
+func (n *Notesdb) Verify() error {
+	var errs []error
 
-func (n *Notesdb) Get(id string) (*entry.Entry, error) {
-	for _, e := range n.entries {
-		if e.Id == id {
-			return e, nil
+	for entry := range n.All() {
+		err := n.verifyEntry(entry)
+		if err != nil {
+			errs = append(errs, err)
 		}
 	}
 
-	return nil, fmt.Errorf("No entry found with id %s", id)
+	return errors.Join(errs...)
+}
+
+func (n *Notesdb) verifyEntry(entry *entry.Entry) error {
+	var errs []error
+
+	for _, revision := range entry.Revisions {
+		err := n.verifyRevision(entry, revision)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+func (n *Notesdb) verifyRevision(entry *entry.Entry, revision *entry.Revision) error {
+	var errs []error
+
+	for _, relative := range revision.Relatives {
+		_, ok := n.entries[relative.Id]
+		if !ok {
+			err := fmt.Errorf("Can't find entry with id %s referenced by %s in %s", relative.Id, entry.Id, entry.Source)
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+func (n *Notesdb) All() iter.Seq[*entry.Entry] {
+	return maps.Values(n.entries)
 }
