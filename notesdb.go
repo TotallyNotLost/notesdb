@@ -23,19 +23,17 @@ func New() *Notesdb {
 	}
 }
 
-func (n *Notesdb) Import(source string) {
+func (n *Notesdb) Import(source string) error {
 	// TODO: Support alternative sources like URLs
 	fi, err := os.Open(source)
 	if err != nil {
-		// TODO: Don't use panic
-		panic(err)
+		return err
 	}
 	defer fi.Close()
 
 	p, err := parser.GetParserFor(source)
 	if err != nil {
-		// TODO: Don't use panic
-		panic(err)
+		return err
 	}
 	p.SetReader(bufio.NewReader(fi))
 	for {
@@ -44,8 +42,7 @@ func (n *Notesdb) Import(source string) {
 			break
 		}
 		if err != nil {
-			// TODO: Don't use panic
-			panic(err)
+			return fmt.Errorf("Importing %s: %w", source, err)
 		}
 
 		existing, ok := n.entries[entry.Id]
@@ -58,6 +55,8 @@ func (n *Notesdb) Import(source string) {
 			n.entries[entry.Id] = &entry
 		}
 	}
+
+	return nil
 }
 
 /*
@@ -97,7 +96,7 @@ func (n *Notesdb) verifyRevision(entry *entry.Entry, revision *entry.Revision) e
 	for _, relative := range revision.Relatives {
 		_, ok := n.entries[relative.Id]
 		if !ok {
-			err := fmt.Errorf("Can't find entry with id %s referenced by %s in %s", relative.Id, entry.Id, entry.Source)
+			err := fmt.Errorf("%s [id=%s] Can't find entry with id %s", entry.Source, entry.Id, relative.Id)
 			errs = append(errs, err)
 		}
 	}

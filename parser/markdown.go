@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
@@ -37,6 +38,7 @@ func (p *mdParser) Next() (e entry.Entry, err error) {
 		for _, relationship := range relatives {
 			relative, err := NewRelative(relationship)
 			if err != nil {
+				err = fmt.Errorf("[id=%s] Processing related metadata: %w", e.Id, err)
 				return entry.Entry{}, err
 			}
 			revision.Relatives = append(revision.Relatives, relative)

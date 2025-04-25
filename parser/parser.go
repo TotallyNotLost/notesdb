@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/sha1"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -85,15 +84,15 @@ func NewRelative(relationship string) (*entry.Relative, error) {
 		case "start":
 			r.Start, err = strconv.Atoi(v)
 			if err != nil {
-				return new(entry.Relative), fmt.Errorf("Error parsing relation start: %w", err)
+				return new(entry.Relative), fmt.Errorf("Relation start not an int: %w", err)
 			}
 		case "end":
 			r.End, err = strconv.Atoi(v)
 			if err != nil {
-				return new(entry.Relative), fmt.Errorf("Error parsing relation end: %w", err)
+				return new(entry.Relative), fmt.Errorf("Relation end not an int: %w", err)
 			}
 		default:
-			return new(entry.Relative), errors.New(fmt.Sprintf("Unsupported key: %s", k))
+			return new(entry.Relative), fmt.Errorf("Unsupported key: %s", k)
 		}
 	}
 
@@ -114,5 +113,5 @@ func GetParserFor(file string) (parser Parser, err error) {
 		}
 	}
 
-	return parser, errors.New(fmt.Sprintf("No parser found for file %s", file))
+	return parser, fmt.Errorf("No parser found for file %s", file)
 }
