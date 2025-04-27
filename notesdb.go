@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"iter"
-	"maps"
 	"os"
+	"sort"
 
 	"github.com/TotallyNotLost/notesdb/entry"
 	"github.com/TotallyNotLost/notesdb/parser"
+	"github.com/samber/lo"
 )
 
 type Notesdb struct {
@@ -37,7 +37,7 @@ func (n *Notesdb) Import(source string) error {
 	}
 	p.SetReader(bufio.NewReader(fi))
 	for {
-		entry, err := p.Next()
+		ent, err := p.Next()
 		if err == io.EOF {
 			break
 		}
@@ -45,14 +45,18 @@ func (n *Notesdb) Import(source string) error {
 			return fmt.Errorf("Importing %s: %w", source, err)
 		}
 
-		existing, ok := n.entries[entry.Id]
+		for _, revision := range ent.Revisions {
+			revision.Start = len(n.entries)
+		}
+
+		existing, ok := n.entries[ent.Id]
 
 		if ok {
 			// The entry has already been recorded.
 			// We need to append this revision to the existing entry.
-			existing.Revisions = append(existing.Revisions, entry.Revisions...)
+			existing.Revisions = append(existing.Revisions, ent.Revisions...)
 		} else {
-			n.entries[entry.Id] = &entry
+			n.entries[ent.Id] = &ent
 		}
 	}
 
@@ -67,7 +71,7 @@ func (n *Notesdb) Import(source string) error {
 func (n *Notesdb) Verify() error {
 	var errs []error
 
-	for entry := range n.All() {
+	for _, entry := range n.All() {
 		err := n.verifyEntry(entry)
 		if err != nil {
 			errs = append(errs, err)
@@ -104,6 +108,15 @@ func (n *Notesdb) verifyRevision(entry *entry.Entry, revision *entry.Revision) e
 	return errors.Join(errs...)
 }
 
-func (n *Notesdb) All() iter.Seq[*entry.Entry] {
-	return maps.Values(n.entries)
+func (n *Notesdb) All() []*entry.Entry {
+	var values []*entry.Entry
+	for _, value := range n.entries {
+		values = append(values, value)
+	}
+
+	sort.Slice(values, func(i, j int) bool {
+		return lo.LastOrEmpty(values[i].Revisions).Start > lo.LastOrEmpty(values[j].Revisions).Start
+	})
+
+	return values
 }

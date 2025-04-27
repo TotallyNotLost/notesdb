@@ -13,9 +13,12 @@ const (
 	EntryTypeText entryType = iota
 	EntryTypeCode
 	EntryTypeMarkdown
+	EntryTypeHtml
 )
 
 type Revision struct {
+	Start     int         `json:"start"` // Inclusive
+	End       int         `json:"end"`   // Exclusive
 	Title     string      `json:"title"`
 	Body      string      `json:"body"`
 	Tags      []string    `json:"tags"`
