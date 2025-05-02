@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/TotallyNotLost/notesdb/entry"
@@ -47,4 +48,28 @@ func (p mdParser) Parse(source string, text string) (e entry.Entry, err error) {
 	e.Type = entry.EntryTypeMarkdown
 	e.Revisions = []*entry.Revision{&revision}
 	return e, nil
+}
+
+func getMetadata(text string) map[string][]string {
+	lines := strings.Split(text, "\n")
+
+	o := make(map[string][]string)
+
+	for _, l := range lines {
+		r, _ := regexp.Compile("^\\[_metadata_:*(\\w+)\\]:# \"(.*)\"$")
+
+		if !r.MatchString(l) {
+			continue
+		}
+
+		key := r.FindStringSubmatch(l)[1]
+		if _, ok := o[key]; !ok {
+			o[key] = []string{}
+		}
+
+		value := r.FindStringSubmatch(l)[2]
+		o[key] = append(o[key], value)
+	}
+
+	return o
 }

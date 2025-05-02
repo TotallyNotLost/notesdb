@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -11,30 +10,6 @@ import (
 
 type Parser interface {
 	Parse(source string, text string) (entry.Entry, error)
-}
-
-func getMetadata(text string) map[string][]string {
-	lines := strings.Split(text, "\n")
-
-	o := make(map[string][]string)
-
-	for _, l := range lines {
-		r, _ := regexp.Compile("^\\[_metadata_:*(\\w+)\\]:# \"(.*)\"$")
-
-		if !r.MatchString(l) {
-			continue
-		}
-
-		key := r.FindStringSubmatch(l)[1]
-		if _, ok := o[key]; !ok {
-			o[key] = []string{}
-		}
-
-		value := r.FindStringSubmatch(l)[2]
-		o[key] = append(o[key], value)
-	}
-
-	return o
 }
 
 func NewRelative(relationship string) (*entry.Relative, error) {
