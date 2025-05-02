@@ -2,34 +2,28 @@ package parser
 
 import (
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/TotallyNotLost/notesdb/entry"
 	"github.com/samber/lo"
 )
 
-type mdParser struct {
-	textParser *textParser
-}
+type mdParser struct{}
 
-func (p *mdParser) SetSource(source string)     { p.textParser.SetSource(source) }
-func (p *mdParser) SetReader(reader io.Reader)  { p.textParser.SetReader(reader) }
-func (p *mdParser) canParse(source string) bool { return strings.HasSuffix(source, ".md") }
-func (p *mdParser) Next() (e entry.Entry, err error) {
-	e, err = p.textParser.Next()
-	if err != nil {
-		return e, err
+func (p mdParser) Parse(source string, text string) (e entry.Entry, err error) {
+	if !strings.HasSuffix(source, ".md") {
+		return e, fmt.Errorf("Yo")
 	}
 
-	revision := lo.FirstOrEmpty(e.Revisions)
-	firstLine := lo.FirstOrEmpty(strings.Split(revision.Body, "\n"))
+	revision := entry.NewRevision()
+	revision.Body = text
+	firstLine := lo.FirstOrEmpty(strings.Split(text, "\n"))
 
 	if firstLine != "" {
 		revision.Title = firstLine
 	}
 
-	metadata := getMetadata(revision.Body)
+	metadata := getMetadata(text)
 
 	if ids, ok := metadata["id"]; ok {
 		e.Id = lo.LastOrEmpty(ids)
@@ -49,6 +43,8 @@ func (p *mdParser) Next() (e entry.Entry, err error) {
 
 	}
 
+	e.Source = source
 	e.Type = entry.EntryTypeMarkdown
+	e.Revisions = []*entry.Revision{&revision}
 	return e, nil
 }

@@ -25,6 +25,13 @@ type Revision struct {
 	Relatives []*Relative `json:"relatives"`
 }
 
+func NewRevision() Revision {
+	return Revision{
+		Tags:      []string{},
+		Relatives: []*Relative{},
+	}
+}
+
 func NewEntry(id string, source string, typ entryType, title string, body string, tags []string) Entry {
 	revision := &Revision{
 		Title:     title,

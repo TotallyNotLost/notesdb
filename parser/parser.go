@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,10 +10,7 @@ import (
 )
 
 type Parser interface {
-	SetSource(source string)
-	SetReader(io.Reader)
-	canParse(source string) bool
-	Next() (entry.Entry, error)
+	Parse(source string, text string) (entry.Entry, error)
 }
 
 func getMetadata(text string) map[string][]string {
@@ -74,18 +70,18 @@ func NewRelative(relationship string) (*entry.Relative, error) {
 }
 
 var parsers = []Parser{
-	&goParser{textParser: &textParser{}},
-	&mdParser{textParser: &textParser{}},
+	&goParser{},
+	&mdParser{},
 	&textParser{},
 }
 
-func GetParserFor(file string) (parser Parser, err error) {
-	for _, p := range parsers {
-		if p.canParse(file) {
-			p.SetSource(file)
-			return p, nil
+func Parse(source string, text string) (entry entry.Entry, err error) {
+	for _, parser := range parsers {
+		entry, err = parser.Parse(source, text)
+		if err == nil {
+			return entry, nil
 		}
 	}
 
-	return parser, fmt.Errorf("No parser found for file %s", file)
+	return entry, fmt.Errorf("No parser found for %s", source)
 }

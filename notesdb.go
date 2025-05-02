@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"sort"
 
 	"github.com/TotallyNotLost/notesdb/entry"
 	"github.com/TotallyNotLost/notesdb/parser"
+	"github.com/TotallyNotLost/notesdb/scanner"
 	"github.com/samber/lo"
 )
 
@@ -31,18 +31,17 @@ func (n *Notesdb) Import(source string) error {
 	}
 	defer fi.Close()
 
-	p, err := parser.GetParserFor(source)
-	if err != nil {
-		return err
-	}
-	p.SetReader(bufio.NewReader(fi))
+	r := bufio.NewReader(fi)
+	scanner := scanner.New(r)
 	for {
-		ent, err := p.Next()
-		if err == io.EOF {
+		more := scanner.Scan()
+		if !more {
 			break
 		}
+
+		ent, err := parser.Parse(source, scanner.Text())
 		if err != nil {
-			return fmt.Errorf("Importing %s: %w", source, err)
+			return err
 		}
 
 		for _, revision := range ent.Revisions {
