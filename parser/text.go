@@ -9,7 +9,8 @@ import (
 
 type textParser struct{}
 
-func (p textParser) Parse(source string, text string) (e entry.Entry, err error) {
+func (p textParser) canParse(source string) bool { return true }
+func (p textParser) parse(source string, text string) (e entry.Entry, err error) {
 	h := sha1.New()
 	h.Write([]byte(text))
 	// TODO: Why doesn't this match sha1sum?

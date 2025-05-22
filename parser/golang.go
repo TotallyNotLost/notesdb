@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/TotallyNotLost/notesdb/entry"
@@ -9,10 +8,8 @@ import (
 
 type goParser struct{}
 
-func (p goParser) Parse(source string, text string) (e entry.Entry, err error) {
-	if !strings.HasSuffix(string(source), ".go") {
-		return e, fmt.Errorf("Can't parse")
-	}
+func (p goParser) canParse(source string) bool { return strings.HasSuffix(string(source), ".go") }
+func (p goParser) parse(source string, text string) (e entry.Entry, err error) {
 	e.Type = entry.EntryTypeCode
 	return e, nil
 }

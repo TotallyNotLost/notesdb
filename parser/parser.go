@@ -8,8 +8,9 @@ import (
 	"github.com/TotallyNotLost/notesdb/entry"
 )
 
-type Parser interface {
-	Parse(source string, text string) (entry.Entry, error)
+type parser interface {
+	canParse(source string) bool
+	parse(source string, text string) (entry.Entry, error)
 }
 
 func NewRelative(relationship string) (*entry.Relative, error) {
@@ -44,17 +45,17 @@ func NewRelative(relationship string) (*entry.Relative, error) {
 	return r, nil
 }
 
-var parsers = []Parser{
+var parsers = []parser{
 	&goParser{},
 	&mdParser{},
 	&textParser{},
 }
 
 func Parse(source string, text string) (entry entry.Entry, err error) {
-	for _, parser := range parsers {
-		entry, err = parser.Parse(source, text)
-		if err == nil {
-			return entry, nil
+	for _, p := range parsers {
+		canParse := p.canParse(source)
+		if canParse {
+			return p.parse(source, text)
 		}
 	}
 

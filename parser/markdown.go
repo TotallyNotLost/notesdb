@@ -11,11 +11,8 @@ import (
 
 type mdParser struct{}
 
-func (p mdParser) Parse(source string, text string) (e entry.Entry, err error) {
-	if !strings.HasSuffix(source, ".md") {
-		return e, fmt.Errorf("Yo")
-	}
-
+func (p mdParser) canParse(source string) bool { return strings.HasSuffix(source, ".md") }
+func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 	revision := entry.NewRevision()
 	revision.Body = text
 	firstLine := lo.FirstOrEmpty(strings.Split(text, "\n"))
