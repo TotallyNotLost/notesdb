@@ -28,7 +28,7 @@ func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 	}
 	if relatives, ok := metadata["related"]; ok {
 		for _, relationship := range relatives {
-			relative, err := NewRelative(relationship)
+			relative, err := entry.NewRelative(relationship)
 			if err != nil {
 				err = fmt.Errorf("[id=%s] Processing related metadata: %w", e.Id, err)
 				return entry.Entry{}, err
@@ -40,6 +40,7 @@ func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 		}
 
 	}
+	// TODO: Relatives should include entries linked to within the text.
 
 	e.Source = source
 	e.Type = entry.EntryTypeMarkdown

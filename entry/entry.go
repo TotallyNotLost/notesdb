@@ -1,5 +1,11 @@
 package entry
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
 type Entry struct {
 	Id        string      `json:"id"`
 	Source    string      `json:"source"`
@@ -45,6 +51,38 @@ func NewEntry(id string, source string, typ entryType, title string, body string
 		Type:      typ,
 		Revisions: []*Revision{revision},
 	}
+}
+
+func NewRelative(relationship string) (*Relative, error) {
+	r := new(Relative)
+
+	kvPairs := strings.SplitSeq(relationship, ",")
+
+	for kvPair := range kvPairs {
+		k := strings.Split(kvPair, "=")[0]
+		v := strings.Split(kvPair, "=")[1]
+
+		var err error
+
+		switch k {
+		case "id":
+			r.Id = v
+		case "start":
+			r.Start, err = strconv.Atoi(v)
+			if err != nil {
+				return new(Relative), fmt.Errorf("Relation start not an int: %w", err)
+			}
+		case "end":
+			r.End, err = strconv.Atoi(v)
+			if err != nil {
+				return new(Relative), fmt.Errorf("Relation end not an int: %w", err)
+			}
+		default:
+			return new(Relative), fmt.Errorf("Unsupported key: %s", k)
+		}
+	}
+
+	return r, nil
 }
 
 type Relative struct {
