@@ -33,7 +33,7 @@ func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 				err = fmt.Errorf("[id=%s] Processing related metadata: %w", e.Id, err)
 				return entry.Entry{}, err
 			}
-			revision.Relatives = append(revision.Relatives, relative)
+			revision.Relatives = append(revision.Relatives, *relative)
 			if strings.HasPrefix(relative.Id, "#") {
 				revision.Tags = append(revision.Tags, strings.TrimPrefix(relative.Id, "#"))
 			}
@@ -44,7 +44,7 @@ func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 
 	e.Source = source
 	e.Type = entry.EntryTypeMarkdown
-	e.Revisions = []*entry.Revision{&revision}
+	e.Revisions = []entry.Revision{revision}
 	return e, nil
 }
 
@@ -54,7 +54,7 @@ func getMetadata(text string) map[string][]string {
 	o := make(map[string][]string)
 
 	for _, l := range lines {
-		r, _ := regexp.Compile("^\\[_metadata_:*(\\w+)\\]:# \"(.*)\"$")
+		r := regexp.MustCompile("\\[_metadata_:*(\\w+)\\]:# \"([^\"]*)\"")
 
 		if !r.MatchString(l) {
 			continue

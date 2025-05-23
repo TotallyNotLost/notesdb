@@ -7,10 +7,10 @@ import (
 )
 
 type Entry struct {
-	Id        string      `json:"id"`
-	Source    string      `json:"source"`
-	Type      entryType   `json:"type"`
-	Revisions []*Revision `json:"revisions"`
+	Id        string     `json:"id"`
+	Source    string     `json:"source"`
+	Type      entryType  `json:"type"`
+	Revisions []Revision `json:"revisions"`
 }
 
 type entryType int
@@ -23,33 +23,33 @@ const (
 )
 
 type Revision struct {
-	Start     int         `json:"start"` // Inclusive
-	End       int         `json:"end"`   // Exclusive
-	Title     string      `json:"title"`
-	Body      string      `json:"body"`
-	Tags      []string    `json:"tags"`
-	Relatives []*Relative `json:"relatives"`
+	Start     int        `json:"start"` // Inclusive
+	End       int        `json:"end"`   // Exclusive
+	Title     string     `json:"title"`
+	Body      string     `json:"body"`
+	Tags      []string   `json:"tags"`
+	Relatives []Relative `json:"relatives"`
 }
 
 func NewRevision() Revision {
 	return Revision{
 		Tags:      []string{},
-		Relatives: []*Relative{},
+		Relatives: []Relative{},
 	}
 }
 
 func NewEntry(id string, source string, typ entryType, title string, body string, tags []string) Entry {
-	revision := &Revision{
+	revision := Revision{
 		Title:     title,
 		Body:      body,
 		Tags:      tags,
-		Relatives: []*Relative{},
+		Relatives: []Relative{},
 	}
 	return Entry{
 		Id:        id,
 		Source:    source,
 		Type:      typ,
-		Revisions: []*Revision{revision},
+		Revisions: []Revision{revision},
 	}
 }
 

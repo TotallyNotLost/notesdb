@@ -84,7 +84,7 @@ func (n *Notesdb) verifyEntry(entry *entry.Entry) error {
 	var errs []error
 
 	for _, revision := range entry.Revisions {
-		err := n.verifyRevision(entry, revision)
+		err := n.verifyRevision(entry, &revision)
 		if err != nil {
 			errs = append(errs, err)
 		}
