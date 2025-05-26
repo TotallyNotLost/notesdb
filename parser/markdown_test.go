@@ -66,7 +66,7 @@ func TestParseMarkdown(t *testing.T) {
 			in: `
 # Hello, World!
 
-This is an entry
+This is an entry with a link to [_metadata_:link]:# "id=another-id".
 
 [_metadata_:related]:# "id=first-relative"
 Testing [_metadata_:related]:# "id=second-relative"
@@ -75,7 +75,7 @@ More text
 
 Hello [_metadata_:id]:# "the-id" world
 [_metadata_:related]:# "id=third-relative"
-			`,
+`,
 			want: entry.Entry{
 				Id:     "the-id",
 				Source: "source.md",
@@ -85,7 +85,7 @@ Hello [_metadata_:id]:# "the-id" world
 						Body: `
 # Hello, World!
 
-This is an entry
+This is an entry with a link to [_metadata_:link]:# "id=another-id".
 
 [_metadata_:related]:# "id=first-relative"
 Testing [_metadata_:related]:# "id=second-relative"
@@ -94,7 +94,25 @@ More text
 
 Hello [_metadata_:id]:# "the-id" world
 [_metadata_:related]:# "id=third-relative"
-			`,
+`,
+						Content: []entry.Content{
+							{
+								Value: `
+# Hello, World!
+
+This is an entry with a link to `},
+							{Type: entry.ContentTypeLink, Value: `[_metadata_:link]:# "id=another-id"`},
+							{Value: `.
+
+[_metadata_:related]:# "id=first-relative"
+Testing [_metadata_:related]:# "id=second-relative"
+
+More text
+
+Hello [_metadata_:id]:# "the-id" world
+[_metadata_:related]:# "id=third-relative"
+`},
+						},
 						Tags: []string{},
 						Relatives: []entry.Relative{
 							{

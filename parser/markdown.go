@@ -15,6 +15,7 @@ func (p mdParser) canParse(source string) bool { return strings.HasSuffix(source
 func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 	revision := entry.NewRevision()
 	revision.Body = text
+	revision.Content = append(revision.Content, getContent(text)...)
 	firstLine := lo.FirstOrEmpty(strings.Split(text, "\n"))
 
 	if firstLine != "" {
@@ -46,6 +47,29 @@ func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 	e.Type = entry.EntryTypeMarkdown
 	e.Revisions = []entry.Revision{revision}
 	return e, nil
+}
+
+func getContent(text string) []entry.Content {
+	if text == "" {
+		return []entry.Content{}
+	}
+
+	contents := []entry.Content{}
+	r := regexp.MustCompile("\\[_metadata_:link]:# \"([^\"]*)\"")
+
+	for r.MatchString(text) {
+		idx := r.FindStringSubmatchIndex(text)
+		contents = append(contents, entry.Content{Value: text[0:idx[0]]})
+		text = text[idx[0]:]
+
+		match := r.FindStringSubmatch(text)
+		contents = append(contents, entry.Content{Type: entry.ContentTypeLink, Value: match[0]})
+		text = text[len(match[0]):]
+	}
+
+	contents = append(contents, entry.Content{Value: text})
+
+	return contents
 }
 
 func getMetadata(text string) map[string][]string {

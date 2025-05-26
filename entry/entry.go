@@ -22,11 +22,25 @@ const (
 	EntryTypeHtml
 )
 
+type Content struct {
+	Type      contentType `json:"type"`
+	Value     string      `json:"value"`
+	Relatives []*Relative `json:"relatives"`
+}
+
+type contentType int
+
+const (
+	ContentTypeText contentType = iota
+	ContentTypeLink
+)
+
 type Revision struct {
 	Start     int        `json:"start"` // Inclusive
 	End       int        `json:"end"`   // Exclusive
 	Title     string     `json:"title"`
 	Body      string     `json:"body"`
+	Content   []Content  `json:"content"`
 	Tags      []string   `json:"tags"`
 	Relatives []Relative `json:"relatives"`
 }
