@@ -129,6 +129,24 @@ Hello [_metadata_:id]:# "the-id" world
 				},
 			},
 		},
+		"With short links": {
+			in: `
+Example entry that links to {$different-entry-id}.
+			`,
+			want: entry.Entry{
+				Source: "source.md",
+				Type:   2,
+				Revisions: []entry.Revision{
+					{
+						Body: `
+Example entry that links to [_metadata_:link]:# "id=different-entry-id".
+			`,
+						Tags:      []string{},
+						Relatives: []entry.Relative{},
+					},
+				},
+			},
+		},
 	}
 
 	for name, tt := range tests {

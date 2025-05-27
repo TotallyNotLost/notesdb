@@ -13,6 +13,7 @@ type mdParser struct{}
 
 func (p mdParser) canParse(source string) bool { return strings.HasSuffix(source, ".md") }
 func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
+	text = expandShortLinks(text)
 	revision := entry.NewRevision()
 	revision.Body = text
 	revision.Content = append(revision.Content, getContent(text)...)
@@ -59,7 +60,7 @@ func getContent(text string) []entry.Content {
 
 	for r.MatchString(text) {
 		idx := r.FindStringSubmatchIndex(text)
-		contents = append(contents, entry.Content{Value: text[0:idx[0]]})
+		contents = append(contents, entry.Content{Type: entry.ContentTypeMarkdown, Value: text[0:idx[0]]})
 		text = text[idx[0]:]
 
 		match := r.FindStringSubmatch(text)
@@ -67,9 +68,19 @@ func getContent(text string) []entry.Content {
 		text = text[len(match[0]):]
 	}
 
-	contents = append(contents, entry.Content{Value: text})
+	contents = append(contents, entry.Content{Type: entry.ContentTypeMarkdown, Value: text})
 
 	return contents
+}
+
+func expandShortLinks(text string) string {
+	r, _ := regexp.Compile("\\{\\$([^}]*)\\}")
+
+	return r.ReplaceAllStringFunc(text, func(match string) string {
+		id := r.FindStringSubmatch(match)[1]
+
+		return fmt.Sprintf("[_metadata_:link]:# \"id=%s\"", id)
+	})
 }
 
 func getMetadata(text string) map[string][]string {

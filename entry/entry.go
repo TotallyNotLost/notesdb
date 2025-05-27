@@ -32,6 +32,8 @@ type contentType int
 
 const (
 	ContentTypeText contentType = iota
+	ContentTypeCode
+	ContentTypeMarkdown
 	ContentTypeLink
 )
 
