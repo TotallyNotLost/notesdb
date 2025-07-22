@@ -41,7 +41,6 @@ type Revision struct {
 	Start     int        `json:"start"` // Inclusive
 	End       int        `json:"end"`   // Exclusive
 	Title     string     `json:"title"`
-	Body      string     `json:"body"`
 	Content   []Content  `json:"content"`
 	Tags      []string   `json:"tags"`
 	Relatives []Relative `json:"relatives"`
