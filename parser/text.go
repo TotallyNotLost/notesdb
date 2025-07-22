@@ -15,6 +15,6 @@ func (p textParser) parse(source string, text string) (e entry.Entry, err error)
 	h.Write([]byte(text))
 	// TODO: Why doesn't this match sha1sum?
 	id := hex.EncodeToString(h.Sum(nil))
-	e = entry.NewEntry(id, source, entry.EntryTypeText, source, text, []string{})
+	e = entry.NewEntry(id, source, entry.EntryTypeText, source, []string{})
 	return e, nil
 }

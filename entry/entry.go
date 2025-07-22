@@ -53,10 +53,9 @@ func NewRevision() Revision {
 	}
 }
 
-func NewEntry(id string, source string, typ entryType, title string, body string, tags []string) Entry {
+func NewEntry(id string, source string, typ entryType, title string, tags []string) Entry {
 	revision := Revision{
 		Title:     title,
-		Body:      body,
 		Tags:      tags,
 		Relatives: []Relative{},
 	}

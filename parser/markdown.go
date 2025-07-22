@@ -15,7 +15,6 @@ func (p mdParser) canParse(source string) bool { return strings.HasSuffix(source
 func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 	text = expandShortLinks(text)
 	revision := entry.NewRevision()
-	revision.Body = text
 	revision.Content = append(revision.Content, getContent(text)...)
 	firstLine := lo.FirstOrEmpty(strings.Split(text, "\n"))
 
