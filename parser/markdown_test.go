@@ -53,7 +53,7 @@ func TestParseMarkdown(t *testing.T) {
 			in: "",
 			want: entry.Entry{
 				Source: "source.md",
-				Type:   2,
+				Type:   entry.EntryTypeMarkdown,
 				Revisions: []entry.Revision{
 					{
 						Tags:      []string{},
@@ -79,30 +79,18 @@ Hello [_metadata_:id]:# "the-id" world
 			want: entry.Entry{
 				Id:     "the-id",
 				Source: "source.md",
-				Type:   2,
+				Type:   entry.EntryTypeMarkdown,
 				Revisions: []entry.Revision{
 					{
-						Body: `
-# Hello, World!
-
-This is an entry with a link to [_metadata_:link]:# "id=another-id".
-
-[_metadata_:related]:# "id=first-relative"
-Testing [_metadata_:related]:# "id=second-relative"
-
-More text
-
-Hello [_metadata_:id]:# "the-id" world
-[_metadata_:related]:# "id=third-relative"
-`,
 						Content: []entry.Content{
 							{
+								Type: entry.ContentTypeMarkdown,
 								Value: `
 # Hello, World!
 
 This is an entry with a link to `},
 							{Type: entry.ContentTypeLink, Value: `[_metadata_:link]:# "id=another-id"`},
-							{Value: `.
+							{Type: entry.ContentTypeMarkdown, Value: `.
 
 [_metadata_:related]:# "id=first-relative"
 Testing [_metadata_:related]:# "id=second-relative"
@@ -130,17 +118,18 @@ Hello [_metadata_:id]:# "the-id" world
 			},
 		},
 		"With short links": {
-			in: `
-Example entry that links to {$different-entry-id}.
-			`,
+			in: `Example entry that links to {$different-entry-id}.`,
 			want: entry.Entry{
 				Source: "source.md",
-				Type:   2,
+				Type:   entry.EntryTypeMarkdown,
 				Revisions: []entry.Revision{
 					{
-						Body: `
-Example entry that links to [_metadata_:link]:# "id=different-entry-id".
-			`,
+						Title: `Example entry that links to [_metadata_:link]:# "id=different-entry-id".`,
+						Content: []entry.Content{
+							{Type: entry.ContentTypeMarkdown, Value: "Example entry that links to "},
+							{Type: entry.ContentTypeLink, Value: `[_metadata_:link]:# "id=different-entry-id"`},
+							{Type: entry.ContentTypeMarkdown, Value: "."},
+						},
 						Tags:      []string{},
 						Relatives: []entry.Relative{},
 					},
