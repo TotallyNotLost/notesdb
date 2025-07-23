@@ -76,6 +76,9 @@ func (n *Notesdb) All() []*entry.Entry {
 	}
 
 	sort.Slice(values, func(i, j int) bool {
+		if values[i].Source != values[j].Source {
+			return values[i].Source > values[j].Source
+		}
 		return lo.LastOrEmpty(values[i].Revisions).Start > lo.LastOrEmpty(values[j].Revisions).Start
 	})
 
