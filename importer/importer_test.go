@@ -37,6 +37,7 @@ func TestImport(t *testing.T) {
 				Title:     "Hello, World!",
 				Content:   []entry.Content{{Type: entry.ContentTypeMarkdown, Value: "Hello, World!\n[_metadata_:id]:# \"hello\""}},
 				Tags:      []string{},
+				Metadata:  map[string][]string{"id": {"hello"}},
 				Relatives: []entry.Relative{},
 			},
 		},

@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/TotallyNotLost/notesdb/entry"
@@ -8,7 +10,7 @@ import (
 
 type parser interface {
 	canParse(source string) bool
-	parse(source string, text string) (entry.Entry, error)
+	parse(text string, e *entry.Entry) error
 }
 
 var parsers = []parser{
@@ -18,12 +20,18 @@ var parsers = []parser{
 }
 
 func Parse(source string, text string) (entry entry.Entry, err error) {
+	entry.Source = source
+	h := sha1.New()
+	h.Write([]byte(text))
+	entry.Id = hex.EncodeToString(h.Sum(nil))
 	for _, p := range parsers {
 		canParse := p.canParse(source)
 		if canParse {
-			return p.parse(source, text)
+			err = p.parse(text, &entry)
+			return
 		}
 	}
 
-	return entry, fmt.Errorf("No parser found for %s", source)
+	err = fmt.Errorf("No parser found for %s", source)
+	return
 }

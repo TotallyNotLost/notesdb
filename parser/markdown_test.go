@@ -5,6 +5,7 @@ import (
 
 	"github.com/TotallyNotLost/notesdb/entry"
 	"github.com/google/go-cmp/cmp"
+	"github.com/samber/lo"
 )
 
 func TestCanParseMarkdown(t *testing.T) {
@@ -52,11 +53,11 @@ func TestParseMarkdown(t *testing.T) {
 		"Empty string": {
 			in: "",
 			want: entry.Entry{
-				Source: "source.md",
-				Type:   entry.EntryTypeMarkdown,
+				Type: entry.EntryTypeMarkdown,
 				Revisions: []entry.Revision{
 					{
 						Tags:      []string{},
+						Metadata:  map[string][]string{},
 						Relatives: []entry.Relative{},
 					},
 				},
@@ -77,9 +78,8 @@ Hello [_metadata_:id]:# "the-id" world
 [_metadata_:related]:# "id=third-relative"
 `,
 			want: entry.Entry{
-				Id:     "the-id",
-				Source: "source.md",
-				Type:   entry.EntryTypeMarkdown,
+				Id:   "the-id",
+				Type: entry.EntryTypeMarkdown,
 				Revisions: []entry.Revision{
 					{
 						Content: []entry.Content{
@@ -102,6 +102,11 @@ Hello [_metadata_:id]:# "the-id" world
 `},
 						},
 						Tags: []string{},
+						Metadata: map[string][]string{
+							"id":      {"the-id"},
+							"link":    {"id=another-id"},
+							"related": {"id=first-relative", "id=second-relative", "id=third-relative"},
+						},
 						Relatives: []entry.Relative{
 							{
 								Id: "first-relative",
@@ -120,8 +125,7 @@ Hello [_metadata_:id]:# "the-id" world
 		"With short links": {
 			in: `Example entry that links to {$different-entry-id}.`,
 			want: entry.Entry{
-				Source: "source.md",
-				Type:   entry.EntryTypeMarkdown,
+				Type: entry.EntryTypeMarkdown,
 				Revisions: []entry.Revision{
 					{
 						Title: `Example entry that links to [_metadata_:link]:# "id=different-entry-id".`,
@@ -130,6 +134,7 @@ Hello [_metadata_:id]:# "the-id" world
 							{Type: entry.ContentTypeLink, Value: `[_metadata_:link]:# "id=different-entry-id"`},
 							{Type: entry.ContentTypeMarkdown, Value: "."},
 						},
+						Metadata:  map[string][]string{"link": {"id=different-entry-id"}},
 						Tags:      []string{},
 						Relatives: []entry.Relative{},
 					},
@@ -140,9 +145,63 @@ Hello [_metadata_:id]:# "the-id" world
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, _ := parser.parse("source.md", tt.in)
-			if !cmp.Equal(got, tt.want) {
-				t.Errorf("Invalid value:\n%s", cmp.Diff(tt.want, got))
+			var e entry.Entry
+			parser.parse(tt.in, &e)
+			if !cmp.Equal(e, tt.want) {
+				t.Errorf("Invalid value:\n%s", cmp.Diff(tt.want, e))
+			}
+		})
+	}
+}
+
+func TestParseMarkdown_setsMetadata(t *testing.T) {
+	parser := &mdParser{}
+
+	tests := map[string]struct {
+		in   string
+		want map[string][]string
+	}{
+		"Empty string": {
+			in:   "",
+			want: map[string][]string{},
+		},
+		"No metadata": {
+			in:   "Hello, World!",
+			want: map[string][]string{},
+		},
+		"With metadata": {
+			in: `
+# Hello, World!
+
+This is an entry with a link to [_metadata_:link]:# "id=another-id".
+
+[_metadata_:related]:# "id=first-relative"
+Testing [_metadata_:related]:# "id=second-relative"
+
+More text
+
+Hello [_metadata_:id]:# "the-id" world
+[_metadata_:related]:# "id=third-relative"
+`,
+			want: map[string][]string{
+				"id":      {"the-id"},
+				"link":    {"id=another-id"},
+				"related": {"id=first-relative", "id=second-relative", "id=third-relative"},
+			},
+		},
+		"With short links": {
+			in:   `Example entry that links to {$different-entry-id}.`,
+			want: map[string][]string{"link": {"id=different-entry-id"}},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			var e entry.Entry
+			parser.parse(tt.in, &e)
+			revision := lo.LastOrEmpty(e.Revisions)
+			if !cmp.Equal(revision.Metadata, tt.want) {
+				t.Errorf("Invalid value:\n%s", cmp.Diff(tt.want, revision.Metadata))
 			}
 		})
 	}

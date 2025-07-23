@@ -38,32 +38,19 @@ const (
 )
 
 type Revision struct {
-	Start     int        `json:"start"` // Inclusive
-	End       int        `json:"end"`   // Exclusive
-	Title     string     `json:"title"`
-	Content   []Content  `json:"content"`
-	Tags      []string   `json:"tags"`
-	Relatives []Relative `json:"relatives"`
+	Start     int                 `json:"start"` // Inclusive
+	End       int                 `json:"end"`   // Exclusive
+	Title     string              `json:"title"`
+	Content   []Content           `json:"content"`
+	Tags      []string            `json:"tags"`
+	Metadata  map[string][]string `json:"metadata"`
+	Relatives []Relative          `json:"relatives"`
 }
 
 func NewRevision() Revision {
 	return Revision{
 		Tags:      []string{},
 		Relatives: []Relative{},
-	}
-}
-
-func NewEntry(id string, source string, typ entryType, title string, tags []string) Entry {
-	revision := Revision{
-		Title:     title,
-		Tags:      tags,
-		Relatives: []Relative{},
-	}
-	return Entry{
-		Id:        id,
-		Source:    source,
-		Type:      typ,
-		Revisions: []Revision{revision},
 	}
 }
 

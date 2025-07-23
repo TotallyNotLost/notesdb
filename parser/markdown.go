@@ -12,7 +12,7 @@ import (
 type mdParser struct{}
 
 func (p mdParser) canParse(source string) bool { return strings.HasSuffix(source, ".md") }
-func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
+func (p mdParser) parse(text string, e *entry.Entry) error {
 	text = expandShortLinks(text)
 	revision := entry.NewRevision()
 	revision.Content = append(revision.Content, getContent(text)...)
@@ -22,17 +22,16 @@ func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 		revision.Title = firstLine
 	}
 
-	metadata := getMetadata(text)
+	revision.Metadata = getMetadata(text)
 
-	if ids, ok := metadata["id"]; ok {
+	if ids, ok := revision.Metadata["id"]; ok {
 		e.Id = lo.LastOrEmpty(ids)
 	}
-	if relatives, ok := metadata["related"]; ok {
+	if relatives, ok := revision.Metadata["related"]; ok {
 		for _, relationship := range relatives {
 			relative, err := entry.NewRelative(relationship)
 			if err != nil {
-				err = fmt.Errorf("[id=%s] Processing related metadata: %w", e.Id, err)
-				return entry.Entry{}, err
+				continue
 			}
 			revision.Relatives = append(revision.Relatives, *relative)
 			if strings.HasPrefix(relative.Id, "#") {
@@ -43,10 +42,9 @@ func (p mdParser) parse(source string, text string) (e entry.Entry, err error) {
 	}
 	// TODO: Relatives should include entries linked to within the text.
 
-	e.Source = source
 	e.Type = entry.EntryTypeMarkdown
 	e.Revisions = []entry.Revision{revision}
-	return e, nil
+	return nil
 }
 
 func getContent(text string) []entry.Content {
