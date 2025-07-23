@@ -2,14 +2,38 @@ package importer
 
 import (
 	"bufio"
+	"errors"
 	"os"
+	"path/filepath"
 
 	"github.com/TotallyNotLost/notesdb/entry"
 	"github.com/TotallyNotLost/notesdb/parser"
 	"github.com/TotallyNotLost/notesdb/scanner"
 )
 
-func Import(entries *map[string]*entry.Entry, source string) error {
+func Import(entries *map[string]*entry.Entry, dir string) error {
+	dirEntries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+
+	var errs []error
+	for _, entry := range dirEntries {
+		absPath := filepath.Join(dir, entry.Name())
+
+		if entry.IsDir() {
+			err = Import(entries, absPath)
+		} else {
+			err = importFile(entries, absPath)
+		}
+
+		errs = append(errs, err)
+	}
+
+	return errors.Join(errs...)
+}
+
+func importFile(entries *map[string]*entry.Entry, source string) error {
 	// TODO: Support alternative sources like URLs
 	fi, err := os.Open(source)
 	if err != nil {

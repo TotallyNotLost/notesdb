@@ -10,7 +10,8 @@ import (
 
 func TestImport(t *testing.T) {
 	entries := make(map[string]*entry.Entry)
-	file, _ := os.CreateTemp("", "*.md")
+	dir, _ := os.MkdirTemp("", "")
+	file, _ := os.CreateTemp(dir, "*.md")
 
 	defer file.Close()
 	defer os.Remove(file.Name())
@@ -20,7 +21,7 @@ func TestImport(t *testing.T) {
 		t.Error(err)
 	}
 
-	Import(&entries, file.Name())
+	Import(&entries, dir)
 
 	got, ok := entries["hello"]
 	if !ok {
@@ -34,7 +35,6 @@ func TestImport(t *testing.T) {
 		Revisions: []entry.Revision{
 			{
 				Title:     "Hello, World!",
-				Body:      "Hello, World!\n[_metadata_:id]:# \"hello\"",
 				Content:   []entry.Content{{Type: entry.ContentTypeMarkdown, Value: "Hello, World!\n[_metadata_:id]:# \"hello\""}},
 				Tags:      []string{},
 				Relatives: []entry.Relative{},
