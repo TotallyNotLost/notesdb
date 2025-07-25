@@ -69,16 +69,20 @@ func TestVerify(t *testing.T) {
 			input:     "",
 			wantError: false,
 		},
-		"Valid input": {
-			input:     "First\n[_metadata_:id]:# \"first\"\n[_metadata_:related]:# \"id=second\"\n---\nSecond {$first}\n[_metadata_:id]:# \"second\"",
+		"Valid link": {
+			input:     "First {$second}\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
 			wantError: false,
 		},
 		"Link to non-existent entry": {
-			input:     "First\n[_metadata_:id]:# \"first\"\n[_metadata_:related]:# \"id=second\"\n---\nSecond {$third}\n[_metadata_:id]:# \"second\"",
+			input:     "First {$third}\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
 			wantError: true,
 		},
+		"Valid related": {
+			input:     "First\n[_metadata_:id]:# \"first\"\n[_metadata_:related]:# \"id=second\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
+			wantError: false,
+		},
 		"Related to non-existent entry": {
-			input:     "First\n[_metadata_:id]:# \"first\"\n[_metadata_:related]:# \"id=third\"\n---\nSecond {$first}\n[_metadata_:id]:# \"second\"",
+			input:     "First\n[_metadata_:id]:# \"first\"\n[_metadata_:related]:# \"id=third\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
 			wantError: true,
 		},
 	}
