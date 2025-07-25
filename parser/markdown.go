@@ -55,15 +55,10 @@ func getContent(text string) []entry.Content {
 	contents := []entry.Content{}
 	r := regexp.MustCompile("\\[_metadata_:link]:# \"([^\"]*)\"")
 
-	for r.MatchString(text) {
-		idx := r.FindStringSubmatchIndex(text)
-		contents = append(contents, entry.Content{Type: entry.ContentTypeMarkdown, Value: text[0:idx[0]]})
-		text = text[idx[0]:]
-
-		match := r.FindStringSubmatch(text)
-		contents = append(contents, entry.Content{Type: entry.ContentTypeLink, Value: match[0]})
-		text = text[len(match[0]):]
-	}
+	text = r.ReplaceAllStringFunc(text, func(match string) string {
+		submatches := r.FindStringSubmatch(match)
+		return fmt.Sprintf("[<notesdb>](%s)", submatches[1])
+	})
 
 	contents = append(contents, entry.Content{Type: entry.ContentTypeMarkdown, Value: text})
 

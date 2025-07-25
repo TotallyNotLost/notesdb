@@ -88,9 +88,7 @@ Hello [_metadata_:id]:# "the-id" world
 								Value: `
 # Hello, World!
 
-This is an entry with a link to `},
-							{Type: entry.ContentTypeLink, Value: `[_metadata_:link]:# "id=another-id"`},
-							{Type: entry.ContentTypeMarkdown, Value: `.
+This is an entry with a link to [<notesdb>](id=another-id).
 
 [_metadata_:related]:# "id=first-relative"
 Testing [_metadata_:related]:# "id=second-relative"
@@ -130,9 +128,7 @@ Hello [_metadata_:id]:# "the-id" world
 					{
 						Title: `Example entry that links to [_metadata_:link]:# "id=different-entry-id".`,
 						Content: []entry.Content{
-							{Type: entry.ContentTypeMarkdown, Value: "Example entry that links to "},
-							{Type: entry.ContentTypeLink, Value: `[_metadata_:link]:# "id=different-entry-id"`},
-							{Type: entry.ContentTypeMarkdown, Value: "."},
+							{Type: entry.ContentTypeMarkdown, Value: "Example entry that links to [<notesdb>](id=different-entry-id)."},
 						},
 						Metadata:  map[string][]string{"link": {"id=different-entry-id"}},
 						Tags:      []string{},
