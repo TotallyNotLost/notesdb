@@ -69,12 +69,20 @@ func TestVerify(t *testing.T) {
 			input:     "",
 			wantError: false,
 		},
-		"Valid link": {
+		"Valid short link": {
 			input:     "First {$second}\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
 			wantError: false,
 		},
-		"Link to non-existent entry": {
+		"Short link to non-existent entry": {
 			input:     "First {$third}\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
+			wantError: true,
+		},
+		"Valid long-form link": {
+			input:     "First [_metadata_:link]:# \"id=second\"\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
+			wantError: false,
+		},
+		"Invalid long-form link: missing id=": {
+			input:     "First [_metadata_:link]:# \"second\"\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
 			wantError: true,
 		},
 		"Valid related": {
