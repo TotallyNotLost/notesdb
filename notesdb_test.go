@@ -59,3 +59,50 @@ func TestImport_importsAllEntries(t *testing.T) {
 		})
 	}
 }
+
+func TestVerify(t *testing.T) {
+	tests := map[string]struct {
+		input     string
+		wantError bool
+	}{
+		"Empty input": {
+			input:     "",
+			wantError: false,
+		},
+		"Valid input": {
+			input:     "First\n[_metadata_:id]:# \"first\"\n[_metadata_:related]:# \"id=second\"\n---\nSecond [_metadata_:id]:# \"second\"",
+			wantError: false,
+		},
+		"Related to non-existent entry": {
+			input:     "First\n[_metadata_:id]:# \"first\"\n[_metadata_:related]:# \"id=third\"\n---\nSecond [_metadata_:id]:# \"second\"",
+			wantError: true,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			db := New()
+
+			dir, _ := os.MkdirTemp("", "")
+			file, _ := os.CreateTemp(dir, "*.md")
+
+			defer file.Close()
+			defer os.Remove(file.Name())
+			defer os.Remove(dir)
+
+			data := []byte(tt.input)
+			if _, err := file.Write(data); err != nil {
+				t.Error(err)
+			}
+
+			db.Import(dir)
+
+			got := db.Verify()
+			gotError := got != nil
+
+			if gotError != tt.wantError {
+				t.Errorf("invalid error: expected %v, got %v", tt.wantError, gotError)
+			}
+		})
+	}
+}
