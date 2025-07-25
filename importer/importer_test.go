@@ -15,6 +15,7 @@ func TestImport(t *testing.T) {
 
 	defer file.Close()
 	defer os.Remove(file.Name())
+	defer os.Remove(dir)
 
 	data := []byte("Hello, World!\n[_metadata_:id]:# \"hello\"")
 	if _, err := file.Write(data); err != nil {

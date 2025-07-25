@@ -16,12 +16,12 @@ type Notesdb struct {
 
 func New() *Notesdb {
 	return &Notesdb{
-		entries: make(map[string]*entry.Entry),
+		entries: map[string]*entry.Entry{},
 	}
 }
 
-func (n *Notesdb) Import(source string) error {
-	return importer.Import(&n.entries, source)
+func (n *Notesdb) Import(dir string) error {
+	return importer.Import(&n.entries, dir)
 }
 
 /*
