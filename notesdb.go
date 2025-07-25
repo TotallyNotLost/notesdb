@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/TotallyNotLost/notesdb/entry"
 	"github.com/TotallyNotLost/notesdb/importer"
@@ -58,6 +59,15 @@ func (n *Notesdb) verifyEntry(entry *entry.Entry) error {
 func (n *Notesdb) verifyRevision(entry *entry.Entry, revision *entry.Revision) error {
 	var errs []error
 
+	for _, link := range revision.Metadata["link"] {
+		id := strings.Split(link, "=")[1]
+
+		_, ok := n.entries[id]
+		if !ok {
+			err := fmt.Errorf("%s [id=%s] Can't find entry with id %s", entry.Source, entry.Id, id)
+			errs = append(errs, err)
+		}
+	}
 	for _, relative := range revision.Relatives {
 		_, ok := n.entries[relative.Id]
 		if !ok {
