@@ -61,7 +61,7 @@ func (n *Notesdb) verifyRevision(entry *entry.Entry, revision *entry.Revision) e
 
 	for _, link := range revision.Metadata["link"] {
 		parts := strings.Split(link, "=")
-		if len(parts) < 2 {
+		if len(parts) < 2 || parts[0] != "id" {
 			err := fmt.Errorf("%s [id=%s] Invalid link format: %s", entry.Source, entry.Id, link)
 			errs = append(errs, err)
 			continue

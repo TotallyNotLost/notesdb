@@ -81,8 +81,12 @@ func TestVerify(t *testing.T) {
 			input:     "First [_metadata_:link]:# \"id=second\"\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
 			wantError: false,
 		},
-		"Invalid long-form link: missing id=": {
+		"Invalid long-form link: missing =": {
 			input:     "First [_metadata_:link]:# \"second\"\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
+			wantError: true,
+		},
+		"Invalid long-form link: missing id": {
+			input:     "First [_metadata_:link]:# \"it=second\"\n[_metadata_:id]:# \"first\"\n---\nSecond\n[_metadata_:id]:# \"second\"",
 			wantError: true,
 		},
 		"Valid related": {
